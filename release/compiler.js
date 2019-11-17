@@ -33,18 +33,16 @@ class ProjectCompiler {
         }
         this.project.options.sourceMap = this.hasSourceMap;
         const currentDirectory = utils.getCommonBasePathOfArray(rootFilenames.map(fileName => this.project.input.getFile(fileName).gulp.cwd));
-        this.host = new host_1.Host(this.project.typescript, currentDirectory, this.project.input, this.project.options);
-        // Calling `createProgram` with an object is only supported in 3.0. Only call this overload
-        // if we have project references (also only supported in 3.0)
-        this.program = this.project.projectReferences
-            ? this.project.typescript.createProgram({
+        if (this.program === undefined) {
+            this.host = new host_1.Host(this.project.typescript, currentDirectory, this.project.input, this.project.options);
+            this.program = this.project.typescript.createIncrementalProgram({
                 rootNames: rootFilenames,
                 options: this.project.options,
                 projectReferences: this.project.projectReferences,
                 host: this.host,
-                oldProgram: this.program
-            })
-            : this.project.typescript.createProgram(rootFilenames, this.project.options, this.host, this.program);
+                createProgram: this.project.typescript.createAbstractBuilder
+            });
+        }
         const result = reporter_1.emptyCompilationResult(this.project.options.noEmit);
         const optionErrors = this.program.getOptionsDiagnostics();
         const syntaxErrors = this.program.getSyntacticDiagnostics();
@@ -118,7 +116,7 @@ class ProjectCompiler {
         }
     }
     emit(result, preEmitDiagnostics, callback) {
-        const emitOutput = this.program.emit(undefined, callback, undefined, false, this.finalTransformers ? this.finalTransformers(this.program) : undefined);
+        const emitOutput = this.program.emit(undefined, callback, undefined, false, this.finalTransformers ? this.finalTransformers(this.program.getProgram()) : undefined);
         result.emitSkipped = emitOutput.emitSkipped;
         // `emitOutput.diagnostics` might contain diagnostics that were already part of `preEmitDiagnostics`.
         // See https://github.com/Microsoft/TypeScript/issues/20876

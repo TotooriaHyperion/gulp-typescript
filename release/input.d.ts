@@ -55,6 +55,7 @@ export declare class FileCache {
     noParse: boolean;
     typescript: typeof ts;
     version: number;
+    versionString: string;
     constructor(typescript: typeof ts, options: ts.CompilerOptions, caseSensitive: boolean);
     addGulp(gFile: VinylFile): File;
     addContent(fileName: string, content: string): File;

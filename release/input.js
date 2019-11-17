@@ -132,6 +132,7 @@ class FileCache {
         this.previous = undefined;
         this.noParse = false; // true when using a file based compiler.
         this.version = 0;
+        this.versionString = "0";
         this.typescript = typescript;
         this.options = options;
         this.caseSensitive = caseSensitive;
@@ -145,6 +146,7 @@ class FileCache {
     }
     reset() {
         this.version++;
+        this.versionString = this.version.toString();
         this.previous = this.current;
         this.createDictionary();
     }
@@ -163,6 +165,7 @@ class FileCache {
             }
         }
         file.ts = this.typescript.createSourceFile(file.fileNameOriginal, file.content, this.options.target);
+        file.ts.version = this.versionString;
     }
     getFile(name) {
         return this.current.getFile(name);
